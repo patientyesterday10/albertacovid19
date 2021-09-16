@@ -1,0 +1,8 @@
+*.pyc
+app/data/*.csv
+/.env
+/app/output/*
+.Rproj.user
+*.Rproj
+.Rhistory
+/venv

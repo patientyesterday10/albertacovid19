@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "covid19ab"
+version = "0.1.0"
+description = ""
+
+[tool.poetry.dependencies]
+python = "^3.8.6"
+selenium = "^3.141.0"
+jupyter = "^1.0.0"
+numpy = "^1.19.4"
+pandas = "^1.1.4"
+cffi = "^1.14.4"
+requests = "^2.25.0"
+beautifulsoup4 = "^4.9.3"
+plotly = "^4.14.3"
+pymc3 = "3.10.0"
+arviz = "0.11.0"
+requests-html = "0.10.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

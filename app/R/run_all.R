@@ -1,0 +1,10 @@
+setwd("app")
+source("R/covid_fit.R")
+source("R/ages.R")
+source("R/ab_vs_on.R")
+source("R/cases_by_location.R")
+source("R/waves.R")
+source("R/yyc_cases.R")
+source("R/severe_outcomes.R")
+source("R/yoy.R")
+

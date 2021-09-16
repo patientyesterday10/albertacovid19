@@ -1,0 +1,85 @@
+stages:
+  - build
+  - deploy
+
+docker-build-master:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE" . # --pull
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - builds
+
+docker-build:
+  image: docker:latest
+  stage: build
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker pull "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
+    - builds
+
+docker-run:
+  image: docker:latest
+  stage: deploy
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker pull "$CI_REGISTRY_IMAGE"
+    - docker run -v $(pwd)/output:/app/output -v $(pwd)/data:/app/data -v $(pwd)/app/R:/app/R -v $(pwd)/app/main.py:/app/main.py -v $(pwd)/app/get_ab_data.py:/app/get_ab_data.py -v $(pwd)/app/alberta:/app/alberta --env TELE_TOKEN=$TELE_TOKEN --env TELE_MODE="PROD" --env TELE_ID_DEV=$TELE_ID_DEV --env TELE_ID_PROD=$TELE_ID_PROD "$CI_REGISTRY_IMAGE"
+  only:
+    - schedules
+  artifacts:
+    paths:
+      - output
+      - data
+
+docker-run-dev:
+  image: docker:latest
+  stage: deploy
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker pull "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - docker run -v $(pwd)/output:/app/output -v $(pwd)/data:/app/data -v $(pwd)/app/R:/app/R -v $(pwd)/app/main.py:/app/main.py -v $(pwd)/app/get_ab_data.py:/app/get_ab_data.py -v $(pwd)/app/alberta:/app/alberta --env TELE_TOKEN=$TELE_TOKEN --env TELE_MODE="DEV" --env TELE_ID_DEV="$TELE_ID_DEV" "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  except:
+    - master
+    - builds
+  artifacts:
+    paths:
+      - output
+      - data
+    when: always
+
+docker-run-build:
+  image: docker:latest
+  stage: deploy
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker pull "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - docker run -v $(pwd)/output:/app/output -v $(pwd)/data:/app/data -v $(pwd)/app/R:/app/R -v $(pwd)/app/main.py:/app/main.py -v $(pwd)/app/get_ab_data.py:/app/get_ab_data.py -v $(pwd)/app/alberta:/app/alberta --env TELE_TOKEN=$TELE_TOKEN --env TELE_MODE="DEV" --env TELE_ID_DEV="$TELE_ID_DEV" "$CI_REGISTRY_IMAGE"
+  only:
+    - builds
+  artifacts:
+    paths:
+      - output
+      - data
+    when: always
